@@ -3,5 +3,5 @@ import os
 
 # Get environment variables for this project
 load_dotenv()
-LAST_FM_KEY = os.getenv("LASTFM_API_KEY")
-LAST_FM_SECRET = os.getenv("LASTFM_API_SECRET")
+API_KEY = os.getenv("SPOTIFY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")

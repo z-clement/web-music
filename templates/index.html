@@ -1,19 +1,14 @@
-<!DOCTYPE html>
+{% extends "layout.html" %}
 
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="initial-scale=1, width=device-width">
+{% block title %}
+    Login
+{% endblock %}
 
-        <!-- Links to bootstrap/styles/etc. -->
-
-        <link href="/static/styles.css" rel="stylesheet">
-
-        <title>Web-Music</title>
-    </head>
-
-    <body>
-        <!-- TODO -->
-        nothing
-    </body>
-</html>
+{% block main %}
+    <div class="section">
+        <h2>Login to last.fm</h2>
+        <form action="/lastfm_login/" method="get">
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+{% endblock %}
