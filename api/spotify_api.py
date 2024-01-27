@@ -1,20 +1,9 @@
 # https://developer.spotify.com/documentation/web-api
 
 import requests
-import secrets, hashlib
-from settings import API_KEY, CLIENT_SECRET
-
-def pkce_verification() -> (bytes, str):
-    '''Generate a random string & challenge for PKCE verification.'''
-    # Use the secrets module to get a 40 byte long string
-    code_verifier = secrets.token_urlsafe(40)
-    # Create PKCE code challenge by hashing the code verifier
-    code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-
-    return (code_challenge, code_verifier)
 
 
-def request_login(code_challenge: bytes, redirect_uri: str, scope: str):
+def request_login(code_challenge: bytes, redirect_uri: str, scope: str, client_id: str):
     '''
     Request a user's Spotify login.
 
@@ -26,7 +15,7 @@ def request_login(code_challenge: bytes, redirect_uri: str, scope: str):
     `error` will be a query parameter in the url if authorization failed.
     '''
     payload = {
-        "client_id": CLIENT_SECRET,
+        "client_id": client_id,
         "response_type": "code",
         "redirect_uri": redirect_uri,
         "scope": scope,
@@ -35,12 +24,13 @@ def request_login(code_challenge: bytes, redirect_uri: str, scope: str):
     }
     # Make a request to the Spotify API
     try:
-        auth_response = requests.post("https://accounts.spotify.com/authorize", params=payload)
+        auth_response = requests.get("https://accounts.spotify.com/authorize", params=payload)
+        return auth_response
     except requests.exceptions.RequestException as e:
         raise e
 
 
-def request_access_token(auth_code: str, redirect_uri: str, code_verifier: str) -> dict:
+def request_access_token(auth_code: str, redirect_uri: str, code_verifier: str, client_id: str) -> dict:
     '''
     Get an access token from the Spotify API that can be used in requests downstream.
 
@@ -54,16 +44,16 @@ def request_access_token(auth_code: str, redirect_uri: str, code_verifier: str) 
         "grant_type": "authorization_code",
         "code": auth_code,
         "redirect_uri": redirect_uri,
-        "client_id": CLIENT_SECRET,
+        "client_id": client_id,
         "code_verifier": code_verifier
     }
-    header = {
+    headers = {
         "Content-Type": "application/x-www-form-urlencoded"
     }
     url = "https://accounts.spotify.com/api/token"
 
     try:
-        response = requests.post(url, headers=header, params=payload)
+        response = requests.post(url, headers=headers, data=payload)
         # Raise any HTTPExceptions encountered
         response.raise_for_status()
         # Continue if status code is value (no exception raised)
