@@ -5,10 +5,6 @@ import requests
 # Configure application
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
     return render_template("index.html")
-        
-@app.route("/homepage/", methods=["GET", "POST"])
-def homepage():
-    return render_template("homepage.html", token=request.get("token"))
