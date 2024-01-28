@@ -16,35 +16,43 @@
         </table>
     </div>
     <div class="container-sm">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Top {{top_tracks.limit}} Tracks</th>
+                    <th>Top {{top_artists.limit}} Artists</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="container-fluid">
         <div class="row">
             <div class="col-sm">
-                <h4 class="sub-header">Top {{top_tracks.limit}} Tracks</h4>
                 <table class="table table-sm w-auto">
-                    <th></th>
-                    <th>Title</th>
-                    <th>Artist</th>
+                    <th class="col-1"></th>
+                    <th class="col-2">Title</th>
+                    <th class="col-3">Artist</th>
                     {% for track in top_tracks["items"] %}
                         <tr>
-                            <td>
+                            <td class="col-1">
                                 <img class="img-thumbnail" src="{{ track['album']['images'][0].url }}"/>
                             </td>
-                            <td style="text-align: center;">{{ track["name"] }}</td>
-                            <td style="text-align: center;">{{ track["artists"][0]["name"] }}</td>
+                            <td class="col-2" style="text-align: center;">{{ track["name"] }}</td>
+                            <td class="col-3" style="text-align: center;">{{ track["artists"][0]["name"] }}</td>
                         </tr>
                     {% endfor %}
                 </table>
             </div>
-                <div class="col-sm">
-                <h4 class="sub-header">Top {{top_artists.limit}} Artists</h4>
+            <div class="col-sm">
                 <table class="table table-sm w-auto">
-                    <th></th>
-                    <th>Artist</th>
+                    <th class="col-4"></th>
+                    <th class="col-5">Artist</th>
                     {% for artist in top_artists["items"] %}
                         <tr>
-                            <td>
+                            <td class="col-4">
                                 <img class="img-thumbnail" src="{{ artist['images'][0].url }}"/>
                             </td>
-                            <td style="text-align: center;">{{ artist["name"] }}</td>
+                            <td class="col-5" style="text-align: center;">{{ artist["name"] }}</td>
                         </tr>
                     {% endfor %}
                 </table>
