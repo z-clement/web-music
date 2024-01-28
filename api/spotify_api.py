@@ -1,9 +1,16 @@
 # https://developer.spotify.com/documentation/web-api
 
-import requests
+import requests, secrets, hashlib, random, base64
+
+def generate_code_challenge():
+    code_verifier = secrets.token_urlsafe(random.randint(33, 96))
+    # Create PKCE code challenge by hashing the code verifier
+    code_challenge = base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode("utf-8")).digest()).decode('utf-8')
+    code_challenge = code_challenge.replace("=", "")
+    return code_verifier, code_challenge
 
 
-def request_login(code_challenge: bytes, redirect_uri: str, scope: str, client_id: str):
+def request_login(state: str, code_challenge: bytes, redirect_uri: str, scope: str, client_id: str):
     '''
     Request a user's Spotify login.
 
@@ -15,6 +22,7 @@ def request_login(code_challenge: bytes, redirect_uri: str, scope: str, client_i
     `error` will be a query parameter in the url if authorization failed.
     '''
     payload = {
+        "state": state,
         "client_id": client_id,
         "response_type": "code",
         "redirect_uri": redirect_uri,

@@ -1,12 +1,13 @@
 from flask import Flask, redirect, render_template, request, session
-from urllib.parse import urlparse, parse_qs
-
-from api.spotify_api import request_login, request_access_token
+from flask_caching import Cache
+from uuid import uuid4
+from api.spotify_api import request_login, request_access_token, generate_code_challenge
 
 # Configure application
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
-
+# Configure cache
+cache = Cache(app)
 
 
 @app.route("/")
@@ -18,8 +19,13 @@ def index():
 def spotify_login():
     # Clear the session
     session.clear()
-    # Get the PKCE code challenge & client ID
-    code_challenge = app.config["CODE_CHALLENGE"]
+    # Get the PKCE code challenge
+    code_verifier, code_challenge = generate_code_challenge()
+    # Store values in the cache
+    session["id"] = uuid4()
+    cache.set("session_id", session["id"])
+    cache.set("code_verifier", code_verifier)
+    # Get the client ID
     client_id = app.config["SPOTIFY_CLIENT_ID"]
     # Request Spotify login, will redirect the user to the specified URI
     # redirect_uri = request.base_url + "/callback/"
@@ -37,7 +43,7 @@ def spotify_login():
         "user-library-read"
     ]
     try:
-        response = request_login(code_challenge, redirect_uri, " ".join(scopes), client_id)
+        response = request_login(session["id"], code_challenge, redirect_uri, " ".join(scopes), client_id)
         return redirect(response.url)
     except Exception as e:
         return render_template("error.html", error=e)
@@ -45,7 +51,11 @@ def spotify_login():
 
 @app.route("/spotify_login/callback/")
 def spotify_login_callback():
-    # Get the keywords passed as query arguments
+    # Check the state matches our cached session id
+    state = request.args.get("state")
+    if state != str(cache.get("session_id")):
+        return render_template("error.html", error="Bad return state")
+    
     error = request.args.get("error")
     if error:
         return render_template("error.html", error=error)
@@ -56,14 +66,20 @@ def spotify_login_callback():
 
     # Redirect from our login request was successful, now we request an access token
     redirect_uri = "http://localhost:5000/spotify_login/callback/"
-    code_verifier = app.config["CODE_VERIFIER"]
+    code_verifier = cache.get("code_verifier")
     client_id = app.config["SPOTIFY_CLIENT_ID"]
     try:
         response = request_access_token(code, redirect_uri, code_verifier, client_id)
-        return render_template("homepage.html", access_token=response)
+        # Store the access token in the session
+        session["token"] = response["access_token"]
+        return render_template("homepage.html")
     except Exception as e:
         return render_template("error.html", error=e)
 
+
+@app.route("/home/")
+def home():
+    return render_template("homepage.html")
 
 @app.route("/logout")
 def logout():
@@ -71,6 +87,7 @@ def logout():
 
     # Forget any session details
     session.clear()
+    cache.clear()
 
     # Redirect user to login form
     return redirect("/")
