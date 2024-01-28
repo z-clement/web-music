@@ -17,36 +17,37 @@ def index():
 
 @app.route("/spotify_login")
 def spotify_login():
-    # Clear the session
-    session.clear()
-    # Get the PKCE code challenge
-    code_verifier, code_challenge = generate_code_challenge()
-    # Store values in the cache
-    session["id"] = uuid4()
-    cache.set("session_id", session["id"])
-    cache.set("code_verifier", code_verifier)
-    # Get the client ID
-    client_id = app.config["SPOTIFY_CLIENT_ID"]
-    # Request Spotify login, will redirect the user to the specified URI
-    # redirect_uri = request.base_url + "/callback/"
-    redirect_uri = "http://localhost:5000/spotify_login/callback/"
-    # Spotify scopes to request access for
-    scopes = [
-        "user-read-playback-state",
-        "user-read-currently-playing",
-        "playlist-read-private",
-        "playlist-read-collaborative",
-        "user-follow-read",
-        "user-read-playback-position",
-        "user-top-read",
-        "user-read-recently-played",
-        "user-library-read"
-    ]
-    try:
-        response = request_login(session["id"], code_challenge, redirect_uri, " ".join(scopes), client_id)
-        return redirect(response.url)
-    except Exception as e:
-        return render_template("error.html", error=e)
+    if session.get("token") is None:
+        # Get the PKCE code challenge
+        code_verifier, code_challenge = generate_code_challenge()
+        # Store values in the cache
+        session["id"] = uuid4()
+        cache.set("session_id", session["id"])
+        cache.set("code_verifier", code_verifier)
+        # Get the client ID
+        client_id = app.config["SPOTIFY_CLIENT_ID"]
+        # Request Spotify login, will redirect the user to the specified URI
+        # redirect_uri = request.base_url + "/callback/"
+        redirect_uri = "http://localhost:5000/spotify_login/callback/"
+        # Spotify scopes to request access for
+        scopes = [
+            "user-read-playback-state",
+            "user-read-currently-playing",
+            "playlist-read-private",
+            "playlist-read-collaborative",
+            "user-follow-read",
+            "user-read-playback-position",
+            "user-top-read",
+            "user-read-recently-played",
+            "user-library-read"
+        ]
+        try:
+            response = request_login(session["id"], code_challenge, redirect_uri, " ".join(scopes), client_id)
+            return redirect(response.url)
+        except Exception as e:
+            return render_template("error.html", error=e)
+    else:
+        return redirect("/homepage")
 
 
 @app.route("/spotify_login/callback/")
@@ -78,13 +79,18 @@ def spotify_login_callback():
 
 
 @app.route("/home")
+@spotify_login_required
 def home():
     # Render the user's information as a homepage
     try:
-        response = get_user_info(session["token"])
-        return render_template("homepage.html", user=response)
+        user = get_user_info(session["token"])
+        top_tracks = get_top_items(session["token"], "tracks", "medium_term", 10)
+        top_artists = get_top_items(session["token"], "artists", "medium_term", 10)
     except Exception as e:
         return render_template("error.html", error=e)
+    
+    return render_template("homepage.html", user=user, top_tracks=top_tracks, top_artists=top_artists)
+
 
 @app.route("/logout")
 def logout():

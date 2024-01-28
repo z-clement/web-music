@@ -1,10 +1,29 @@
 # https://developer.spotify.com/documentation/web-api
 
 import requests, secrets, hashlib, random, base64
+from flask import session, redirect
+from functools import wraps
 
 SPOTIFY_URL = "https://api.spotify.com/v1"
 
+def spotify_login_required(f):
+    """
+    Decorate routes to require login.
+
+    https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("token") is None:
+            return redirect("/spotify_login")
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 def generate_code_challenge():
+    '''Generate PKCE code challenge for OAuth'''
     code_verifier = secrets.token_urlsafe(random.randint(33, 96))
     # Create PKCE code challenge by hashing the code verifier
     code_challenge = base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode("utf-8")).digest()).decode('utf-8')
@@ -86,3 +105,22 @@ def get_user_info(access_token: str) -> dict:
     return response.json()
 
 
+def get_top_items(access_token: str, type: str, time_range: str = "medium_term", limit: int = 10):
+    '''
+    Get the current user's top n items over the given time_range
+    `access_token`: current user's access token
+    `type`: return either top `artists` or `tracks`
+    `time_range`: Spotify enforced time ranges. One of `[long_term, medium_term, short_term]`
+    `limit`: limit of top items to return, defaults to `10`
+    '''
+    url = SPOTIFY_URL + "/me/top/" + type
+
+    params = {
+        "time_range": time_range,
+        "limit": limit
+    }
+    headers = {"Authorization": "Bearer " + access_token}
+
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    return response.json()
