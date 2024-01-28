@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, request, session
 from flask_caching import Cache
 from uuid import uuid4
-from api.spotify_api import request_login, request_access_token, generate_code_challenge
+from api.spotify_api import *
 
 # Configure application
 app = Flask(__name__, instance_relative_config=True)
@@ -15,7 +15,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/spotify_login/")
+@app.route("/spotify_login")
 def spotify_login():
     # Clear the session
     session.clear()
@@ -72,14 +72,19 @@ def spotify_login_callback():
         response = request_access_token(code, redirect_uri, code_verifier, client_id)
         # Store the access token in the session
         session["token"] = response["access_token"]
-        return render_template("homepage.html")
+        return redirect("/home")
     except Exception as e:
         return render_template("error.html", error=e)
 
 
-@app.route("/home/")
+@app.route("/home")
 def home():
-    return render_template("homepage.html")
+    # Render the user's information as a homepage
+    try:
+        response = get_user_info(session["token"])
+        return render_template("homepage.html", user=response)
+    except Exception as e:
+        return render_template("error.html", error=e)
 
 @app.route("/logout")
 def logout():
