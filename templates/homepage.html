@@ -5,54 +5,45 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container-sm">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Username: {{ user.display_name }}</th>
-                    <th>Followers: {{ user.followers.total }}</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-    <div class="container-sm">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Top {{top_tracks.limit}} Tracks</th>
-                    <th>Top {{top_artists.limit}} Artists</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm">
-                <table class="table table-sm w-auto">
-                    <th class="col-1"></th>
-                    <th class="col-2">Title</th>
-                    <th class="col-3">Artist</th>
+                <h4>Username: {{ user.display_name }}</h4>
+                <h4>Followers: {{ user.followers.total }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-5">
+                <h4>Top {{top_tracks.limit}} Tracks</h4>
+                <table class="table">
+                    <th class=></th>
+                    <th class=>Title</th>
+                    <th class=>Artist</th>
                     {% for track in top_tracks["items"] %}
                         <tr>
-                            <td class="col-1">
+                            <td class="td-img">
                                 <img class="img-thumbnail" src="{{ track['album']['images'][0].url }}"/>
                             </td>
-                            <td class="col-2" style="text-align: center;">{{ track["name"] }}</td>
-                            <td class="col-3" style="text-align: center;">{{ track["artists"][0]["name"] }}</td>
+                            <td style="text-align: center;">{{ track["name"] }}</td>
+                            <td style="text-align: center;">{{ track["artists"][0]["name"] }}</td>
                         </tr>
                     {% endfor %}
                 </table>
             </div>
-            <div class="col-sm">
-                <table class="table table-sm w-auto">
-                    <th class="col-4"></th>
-                    <th class="col-5">Artist</th>
+            <div class="col-md-2"></div>
+            <div class="col-md-5">
+                <h4>Top {{top_artists.limit}} Artists</h4>
+                <table class="table">
+                    <th></th>
+                    <th>Artist</th>
                     {% for artist in top_artists["items"] %}
                         <tr>
-                            <td class="col-4">
+                            <td class="td-img">
                                 <img class="img-thumbnail" src="{{ artist['images'][0].url }}"/>
                             </td>
-                            <td class="col-5" style="text-align: center;">{{ artist["name"] }}</td>
+                            <td style="text-align: center;">{{ artist["name"] }}</td>
                         </tr>
                     {% endfor %}
                 </table>

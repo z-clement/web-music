@@ -1,0 +1,33 @@
+.spacer {
+    height: 1em;
+}
+
+.table {
+    border: 1px solid #3d3d3d;
+  }
+  
+.table thead th {
+    border-top: 1px solid #3d3d3d;
+    border-bottom: 1px solid #3d3d3d;
+    border-left: 1px solid #3d3d3d;
+    border-right: 1px solid #3d3d3d;
+  }
+  
+.table td {
+    border-left: 1px solid #3d3d3d;
+    border-right: 1px solid #3d3d3d;
+  }
+
+tr {
+    min-height: 10vh;
+    max-height: 10vh;
+}
+
+.td-img {
+    width: 15vh;
+}
+
+.img-thumbnail {
+    width: 100%;
+    height: auto;
+}
