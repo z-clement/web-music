@@ -78,18 +78,23 @@ def spotify_login_callback():
         return render_template("error.html", error=e)
 
 
-@app.route("/home")
+@app.route("/home", methods=["GET", "POST"])
 @spotify_login_required
 def home():
+    if request.method == "POST":
+        time_range = request.form.get("time_range")
+    else:
+        time_range = "medium_term"
+
     # Render the user's information as a homepage
     try:
         user = get_user_info(session["token"])
-        top_tracks = get_top_items(session["token"], "tracks", "medium_term", 10)
-        top_artists = get_top_items(session["token"], "artists", "medium_term", 10)
+        top_tracks = get_top_items(session["token"], "tracks", time_range, 10)
+        top_artists = get_top_items(session["token"], "artists", time_range, 10)
     except Exception as e:
         return render_template("error.html", error=e)
     
-    return render_template("homepage.html", user=user, top_tracks=top_tracks, top_artists=top_artists)
+    return render_template("homepage.html", user=user, top_tracks=top_tracks, top_artists=top_artists, time_range=time_range)
 
 
 @app.route("/logout")

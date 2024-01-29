@@ -105,7 +105,7 @@ def get_user_info(access_token: str) -> dict:
     return response.json()
 
 
-def get_top_items(access_token: str, type: str, time_range: str = "medium_term", limit: int = 10):
+def get_top_items(access_token: str, type: str, time_range: str, limit: int = 10):
     '''
     Get the current user's top n items over the given time_range
     `access_token`: current user's access token

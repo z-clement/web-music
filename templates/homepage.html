@@ -5,6 +5,13 @@
 {% endblock %}
 
 {% block main %}
+    {% if time_range == "medium_term" %}
+        {% set period = "6 Months" %}
+    {% elif time_range == "short_term" %}
+        {% set period = "Last Month" %}
+    {% else %}
+        {% set period = "Multiple Years" %}
+    {% endif %}
     <div class="container-fluid">
         <div class="row">
                 <h4>Username: {{ user.display_name }}</h4>
@@ -12,11 +19,20 @@
             </div>
         </div>
     </div>
-    <div class="spacer"></div>
+    <div class="mb-3">
+        <form action="/home" method="post">
+            <select name="time_range" id="time_range" onchange='if(this.value != 0) { this.form.submit(); }'>
+                <option value="" disabled selected>Select time range</option>
+                <option value="short_term">1 month</option>
+                <option value="medium_term">6 months</option>
+                <option value="long_term">Multiple years</option>
+            </select>
+        </form>
+    </div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-5">
-                <h4>Top {{top_tracks.limit}} Tracks</h4>
+                <h4>Top {{ top_tracks.limit }} Tracks Over {{ period }}</h4>
                 <table class="table">
                     <th class=></th>
                     <th class=>Title</th>
@@ -34,7 +50,7 @@
             </div>
             <div class="col-md-2"></div>
             <div class="col-md-5">
-                <h4>Top {{top_artists.limit}} Artists</h4>
+                <h4>Top {{ top_artists.limit }} Artists Over {{ period }}</h4>
                 <table class="table">
                     <th></th>
                     <th>Artist</th>
